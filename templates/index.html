@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+      .categories, .movies {
+        display: inline-block;
+        vertical-align: top;
+        margin-top:50px;
+      }
+      #genres {
+        list-style: none;
+        padding: 0;
+        margin: 5px;
+        width: 200px;
+
+      }
+      li {
+        clear: both;
+      }
+    </style>
+</head>
+<body>
+    <div>
+      <a href="/plot">Go to see plot.</a>
+    </div>
+    <div class='form_wrapper'>
+      <form action="/search">
+        <div>{{form.search_item(placeholder='Search item')}} </div>
+        <div>{{form.search_item(placeholder='Search_by')}} </div>
+        <input type="submit" value="Search" >
+      </form>
+      
+      
+    </div>
+    <div class='categories'>
+        <ul id="genres">
+            {% for genre in genres %}
+            <li>
+              <a href="/genres/{{ genre.id }}">
+                {{ genre.name }}
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+    </div>
+    <div class='movies'>
+      <h4>{{ active_genre.name }}</h4>
+      <ul id="todos">
+        {% for movie in movies %}
+        <li>
+          <a href="/movies/{{movie.rank}}">{{movie.rank}}: {{movie.name}}, director: {{movie.director}}</a>
+          
+        </li>
+        {% endfor %}
+      </ul>
+
+    </div>
+</body>
+</html>
