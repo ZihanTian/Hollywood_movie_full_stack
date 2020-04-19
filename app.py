@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, abort
+from flask import Flask, render_template, request, redirect, url_for, jsonify, abort, flash 
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import requests
@@ -10,6 +10,26 @@ import plotly.graph_objs as go
 from flask_wtf import Form
 from forms import *
 
+
+movie_genres = db.Table('movie_genres',
+    db.Column('movie_id', db.Integer, db.ForeignKey('movie.rank'), primary_key=True),
+    db.Column('genre_id', db.Integer, db.ForeignKey('genre.id'), primary_key=True)
+)
+
+class Movie(db.Model):
+    rank = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(), nullable=False)
+    released_year = db.Column(db.Integer,nullable=False)
+    director = db.Column(db.String(), nullable=False)
+    one_sentence = db.Column(db.String(), nullable=False)
+    genres = db.relationship('Genre',secondary='movie_genres',
+        backref=db.backref('movies'))
+
+class Genre(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(), nullable=False, unique=True)
+
+    
 api_key = secret.omdb_api_key 
 baseurl = 'http://www.omdbapi.com/'
 
@@ -63,23 +83,7 @@ def save_cache(cache_dict):
     fw.write(dumped_json_cache)
     fw.close() 
 
-movie_genres = db.Table('movie_genres',
-    db.Column('movie_id', db.Integer, db.ForeignKey('movie.rank'), primary_key=True),
-    db.Column('genre_id', db.Integer, db.ForeignKey('genre.id'), primary_key=True)
-)
 
-class Movie(db.Model):
-    rank = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(), nullable=False)
-    released_year = db.Column(db.Integer,nullable=False)
-    director = db.Column(db.String(), nullable=False)
-    one_sentence = db.Column(db.String(), nullable=False)
-    genres = db.relationship('Genre',secondary='movie_genres',
-        backref=db.backref('movies'))
-
-class Genre(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(), nullable=False, unique=True)
 
 # return all genres and all 100 movies 
 def format_genre(genre_class):
@@ -136,10 +140,37 @@ def get_movie_detail(movie_id):
         cache_dict[str(movie_id)] = ratings 
         save_cache(cache_dict)
     one_sentence = movie.one_sentence
-    return render_template('movie_detail.html',movie_name=movie.name,one_sentence=one_sentence,ratings=ratings)
+    return render_template('movie_detail.html',movie_name=movie.name,
+            one_sentence=one_sentence,ratings=ratings)
 
 @app.route("/plot")
 def plot_image():
     return render_template("scatter.html")
     
+@app.route("/search", methods=['POST'])
+def get_searched():
+    search_item = request.form.get('search_item')
+    search_by = request.form.get('search_by')
+    movies = []
+    
+    if search_by == 'Search by rank':
+        
+        if search_item.isdigit() and 1<= int(search_item) <= 100:
+            movie_class = Movie.query.get(int(search_item))
+            movie = format_movie(movie_class)
+            movies = [movie]
+            flash('success')
+        else:
+            flash('Please input an interger between 1 and 100')
+        
+    else:
+        movies_class = Movie.query.filter(Movie.name.ilike(f'%{search_item}%')).all()
+        if len(movies_class)==0:
+            flash('No result.')
+        else:
+            movies = []
+            for movie_class in movies_class:
+                movies.append(format_movie(movie_class))
+            flash('success')
+    return render_template("search_detail.html",movies = movies)
     

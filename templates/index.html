@@ -27,9 +27,9 @@
       <a href="/plot">Go to see plot.</a>
     </div>
     <div class='form_wrapper'>
-      <form action="/search">
+      <form action="/search" method="POST">
         <div>{{form.search_item(placeholder='Search item')}} </div>
-        <div>{{form.search_item(placeholder='Search_by')}} </div>
+        <div>{{form.search_by()}} </div>
         <input type="submit" value="Search" >
       </form>
       
