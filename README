@@ -1,8 +1,8 @@
 Required packages: bs4 flask flask_sqlalchemy flask_migrate plotly flask_wtf and forms
 
-1. run scarpe.py first(get your own omdb api key which will provided in the report)
+1. create secret.py file and put in omdb api key (which will provided in the report) and run scrape.py
 2. down load pstgresql database change the username in app.py and run createdb movieapp 
 3. run flask db init to monitor schema change of db 
 4. run flask db migrate and flask db upgrade 
 5. run write_db.py to write in all records.
-6. run app.py to start the app 
+6. run app.py to start the app  
